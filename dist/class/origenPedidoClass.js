@@ -22,26 +22,26 @@ class OrigenPedido {
         const nombre = req.body.nombre;
         const nuevoOrigen = new origenPedidoModel_1.default({
             idCreador: idCreador,
-            nombre: nombre
+            nombre: nombre,
         });
         nuevoOrigen.save((err, origenDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
                     mensaje: `Error interno`,
-                    err
+                    err,
                 });
             }
             return resp.json({
                 ok: true,
                 mensaje: `Origen de pedido creado`,
-                origenDB
+                origenDB,
             });
         });
     }
     editarOrigen(req, resp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = req.get('id');
+            const id = req.get("id");
             const nombre = req.body.nombre;
             const estado = req.body.estado;
             // const estado = req.get('estado');
@@ -50,13 +50,13 @@ class OrigenPedido {
             if (!respOrigen) {
                 return resp.json({
                     ok: false,
-                    mensaje: `No se encontró un Origen de Pedido`
+                    mensaje: `No se encontró un Origen de Pedido`,
                 });
             }
             else {
                 const query = {
                     nombre: nombre,
-                    estado: estado
+                    estado: estado,
                 };
                 if (!query.nombre) {
                     query.nombre = respOrigen.nombre;
@@ -67,49 +67,50 @@ class OrigenPedido {
                         return resp.json({
                             ok: false,
                             mensaje: `Error interno`,
-                            err
+                            err,
                         });
                     }
                     return resp.json({
                         ok: true,
-                        mensaje: 'Origen actualizado',
-                        origenDB
+                        mensaje: "Origen actualizado",
+                        origenDB,
                     });
                 });
             }
         });
     }
     obtenerOrigen(req, resp) {
-        const id = req.get('id');
+        const id = req.get("id");
         origenPedidoModel_1.default.findById(id, (err, origenDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
                     mensaje: `Error interno`,
-                    err
+                    err,
                 });
             }
             if (!origenDB) {
                 return resp.json({
                     ok: false,
-                    mensaje: `No se encontró un Origen de Pedido`
+                    mensaje: `No se encontró un Origen de Pedido`,
                 });
             }
             return resp.json({
                 ok: true,
-                origenDB
+                origenDB,
             });
         });
     }
     obtenerOrigenes(req, resp) {
-        const estado = req.get('estado');
+        const estado = req.get("estado");
         // const estado: boolean = castEstado(estadoHeader);
         origenPedidoModel_1.default.find({}, (err, origenesDB) => {
+            // estado: estado
             if (err) {
                 return resp.json({
                     ok: false,
                     mensaje: `Error interno`,
-                    err
+                    err,
                 });
             }
             // if (origenesDB.length === 0) {
@@ -120,24 +121,48 @@ class OrigenPedido {
             // }
             return resp.json({
                 ok: true,
-                origenesDB
+                origenesDB,
+            });
+        });
+    }
+    obtenerOrigenesCriterio(req, resp) {
+        const criterio = req.get("criterio");
+        const regExpCrit = new RegExp(criterio, "i");
+        origenPedidoModel_1.default.find({ nombre: regExpCrit }, (err, origenesDB) => {
+            // estado: estado
+            if (err) {
+                return resp.json({
+                    ok: false,
+                    mensaje: `Error interno`,
+                    err,
+                });
+            }
+            // if (origenesDB.length === 0) {
+            //     return resp.json({
+            //         ok: false,
+            //         mensaje: `No se encontró un Origen de Pedido`
+            //     });
+            // }
+            return resp.json({
+                ok: true,
+                origenesDB,
             });
         });
     }
     eliminarOrigen(req, resp) {
-        const id = req.get('id');
+        const id = req.get("id");
         origenPedidoModel_1.default.findById(id, (err, origenDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
                     mensaje: `Error interno`,
-                    err
+                    err,
                 });
             }
             if (!origenDB) {
                 return resp.json({
                     ok: false,
-                    mensaje: `No se encontró un Origen de Pedido`
+                    mensaje: `No se encontró un Origen de Pedido`,
                 });
             }
             origenPedidoModel_1.default.findByIdAndDelete(id, {}, (err, origenEliminadoDB) => {
@@ -145,12 +170,12 @@ class OrigenPedido {
                     return resp.json({
                         ok: false,
                         mensaje: `Error interno`,
-                        err
+                        err,
                     });
                 }
                 return resp.json({
                     ok: true,
-                    origenEliminadoDB
+                    origenEliminadoDB,
                 });
             });
         });
