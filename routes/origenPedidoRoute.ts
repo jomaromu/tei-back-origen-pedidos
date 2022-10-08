@@ -40,24 +40,6 @@ origenRouter.get(
   }
 );
 
-origenRouter.get(
-  "/obtenerOrigenesCriterio",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const obtenerOrigenesCriterio = new OrigenPedido();
-    obtenerOrigenesCriterio.obtenerOrigenesCriterio(req, resp);
-  }
-);
-
-origenRouter.get(
-  "/obtenerOrigenes",
-  [verificaToken],
-  (req: Request, resp: Response) => {
-    const obtenerOrigenes = new OrigenPedido();
-    obtenerOrigenes.obtenerOrigenes(req, resp);
-  }
-);
-
 origenRouter.delete(
   "/eliminarOrigen",
   [verificaToken],

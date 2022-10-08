@@ -1,5 +1,6 @@
 import { Response } from "express";
 import { CallbackError } from "mongoose";
+import Server from "./server";
 
 // Interfaces
 import { OrigenPedidoInterface } from "../interfaces/origenPedido";
@@ -13,10 +14,12 @@ export class OrigenPedido {
   crearOrigen(req: any, resp: Response): void {
     const idCreador = req.usuario._id;
     const nombre = req.body.nombre;
+    const estado: boolean = req.body.estado;
 
     const nuevoOrigen = new origenPedidoModel({
-      idCreador: idCreador,
-      nombre: nombre,
+      idCreador,
+      nombre,
+      estado,
     });
 
     nuevoOrigen.save((err: CallbackError, origenDB: OrigenPedidoInterface) => {
@@ -26,23 +29,24 @@ export class OrigenPedido {
           mensaje: `Error interno`,
           err,
         });
+      } else {
+        const server = Server.instance;
+        server.io.emit("cargar-origenes", {
+          ok: true,
+        });
+        return resp.json({
+          ok: true,
+          mensaje: `Origen de pedido creado`,
+          origenDB,
+        });
       }
-
-      return resp.json({
-        ok: true,
-        mensaje: `Origen de pedido creado`,
-        origenDB,
-      });
     });
   }
 
   async editarOrigen(req: any, resp: Response): Promise<any> {
     const id = req.get("id");
     const nombre = req.body.nombre;
-    const estado = req.body.estado;
-
-    // const estado = req.get('estado');
-    // const estado: boolean = castEstado(estadoHeader);
+    const estado: boolean = req.body.estado;
 
     const respOrigen = await origenPedidoModel.findById(id).exec();
 
@@ -61,8 +65,6 @@ export class OrigenPedido {
         query.nombre = respOrigen.nombre;
       }
 
-      // console.log(query.estado)
-
       origenPedidoModel.findByIdAndUpdate(
         id,
         query,
@@ -74,13 +76,17 @@ export class OrigenPedido {
               mensaje: `Error interno`,
               err,
             });
+          } else {
+            const server = Server.instance;
+            server.io.emit("cargar-origenes", {
+              ok: true,
+            });
+            return resp.json({
+              ok: true,
+              mensaje: "Origen actualizado",
+              origenDB,
+            });
           }
-
-          return resp.json({
-            ok: true,
-            mensaje: "Origen actualizado",
-            origenDB,
-          });
         }
       );
     }
@@ -116,14 +122,9 @@ export class OrigenPedido {
   }
 
   obtenerOrigenes(req: any, resp: Response): void {
-    const estado: boolean = req.get("estado");
-    // const estado: boolean = castEstado(estadoHeader);
-
     origenPedidoModel.find(
       {},
       (err: CallbackError, origenesDB: Array<OrigenPedidoInterface>) => {
-        // estado: estado
-
         if (err) {
           return resp.json({
             ok: false,
@@ -131,13 +132,6 @@ export class OrigenPedido {
             err,
           });
         }
-
-        // if (origenesDB.length === 0) {
-        //     return resp.json({
-        //         ok: false,
-        //         mensaje: `No se encontró un Origen de Pedido`
-        //     });
-        // }
 
         return resp.json({
           ok: true,
@@ -203,19 +197,23 @@ export class OrigenPedido {
         origenPedidoModel.findByIdAndDelete(
           id,
           {},
-          (err: CallbackError, origenEliminadoDB: any) => {
+          (err: CallbackError, origenDB: any) => {
             if (err) {
               return resp.json({
                 ok: false,
                 mensaje: `Error interno`,
                 err,
               });
+            } else {
+              const server = Server.instance;
+              server.io.emit("cargar-origenes", {
+                ok: true,
+              });
+              return resp.json({
+                ok: true,
+                origenDB,
+              });
             }
-
-            return resp.json({
-              ok: true,
-              origenEliminadoDB,
-            });
           }
         );
       }

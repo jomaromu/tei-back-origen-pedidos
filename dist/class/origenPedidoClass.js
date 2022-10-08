@@ -13,6 +13,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrigenPedido = void 0;
+const server_1 = __importDefault(require("./server"));
 // Modelos
 const origenPedidoModel_1 = __importDefault(require("../models/origenPedidoModel"));
 class OrigenPedido {
@@ -20,9 +21,11 @@ class OrigenPedido {
     crearOrigen(req, resp) {
         const idCreador = req.usuario._id;
         const nombre = req.body.nombre;
+        const estado = req.body.estado;
         const nuevoOrigen = new origenPedidoModel_1.default({
-            idCreador: idCreador,
-            nombre: nombre,
+            idCreador,
+            nombre,
+            estado,
         });
         nuevoOrigen.save((err, origenDB) => {
             if (err) {
@@ -32,11 +35,17 @@ class OrigenPedido {
                     err,
                 });
             }
-            return resp.json({
-                ok: true,
-                mensaje: `Origen de pedido creado`,
-                origenDB,
-            });
+            else {
+                const server = server_1.default.instance;
+                server.io.emit("cargar-origenes", {
+                    ok: true,
+                });
+                return resp.json({
+                    ok: true,
+                    mensaje: `Origen de pedido creado`,
+                    origenDB,
+                });
+            }
         });
     }
     editarOrigen(req, resp) {
@@ -44,8 +53,6 @@ class OrigenPedido {
             const id = req.get("id");
             const nombre = req.body.nombre;
             const estado = req.body.estado;
-            // const estado = req.get('estado');
-            // const estado: boolean = castEstado(estadoHeader);
             const respOrigen = yield origenPedidoModel_1.default.findById(id).exec();
             if (!respOrigen) {
                 return resp.json({
@@ -61,7 +68,6 @@ class OrigenPedido {
                 if (!query.nombre) {
                     query.nombre = respOrigen.nombre;
                 }
-                // console.log(query.estado)
                 origenPedidoModel_1.default.findByIdAndUpdate(id, query, { new: true }, (err, origenDB) => {
                     if (err) {
                         return resp.json({
@@ -70,11 +76,17 @@ class OrigenPedido {
                             err,
                         });
                     }
-                    return resp.json({
-                        ok: true,
-                        mensaje: "Origen actualizado",
-                        origenDB,
-                    });
+                    else {
+                        const server = server_1.default.instance;
+                        server.io.emit("cargar-origenes", {
+                            ok: true,
+                        });
+                        return resp.json({
+                            ok: true,
+                            mensaje: "Origen actualizado",
+                            origenDB,
+                        });
+                    }
                 });
             }
         });
@@ -102,10 +114,7 @@ class OrigenPedido {
         });
     }
     obtenerOrigenes(req, resp) {
-        const estado = req.get("estado");
-        // const estado: boolean = castEstado(estadoHeader);
         origenPedidoModel_1.default.find({}, (err, origenesDB) => {
-            // estado: estado
             if (err) {
                 return resp.json({
                     ok: false,
@@ -113,12 +122,6 @@ class OrigenPedido {
                     err,
                 });
             }
-            // if (origenesDB.length === 0) {
-            //     return resp.json({
-            //         ok: false,
-            //         mensaje: `No se encontró un Origen de Pedido`
-            //     });
-            // }
             return resp.json({
                 ok: true,
                 origenesDB,
@@ -165,7 +168,7 @@ class OrigenPedido {
                     mensaje: `No se encontró un Origen de Pedido`,
                 });
             }
-            origenPedidoModel_1.default.findByIdAndDelete(id, {}, (err, origenEliminadoDB) => {
+            origenPedidoModel_1.default.findByIdAndDelete(id, {}, (err, origenDB) => {
                 if (err) {
                     return resp.json({
                         ok: false,
@@ -173,10 +176,16 @@ class OrigenPedido {
                         err,
                     });
                 }
-                return resp.json({
-                    ok: true,
-                    origenEliminadoDB,
-                });
+                else {
+                    const server = server_1.default.instance;
+                    server.io.emit("cargar-origenes", {
+                        ok: true,
+                    });
+                    return resp.json({
+                        ok: true,
+                        origenDB,
+                    });
+                }
             });
         });
     }

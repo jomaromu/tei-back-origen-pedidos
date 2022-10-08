@@ -19,14 +19,6 @@ origenRouter.get("/obtenerOrigenes", [auth_1.verificaToken], (req, resp) => {
     const obtenerOrigenes = new origenPedidoClass_1.OrigenPedido();
     obtenerOrigenes.obtenerOrigenes(req, resp);
 });
-origenRouter.get("/obtenerOrigenesCriterio", [auth_1.verificaToken], (req, resp) => {
-    const obtenerOrigenesCriterio = new origenPedidoClass_1.OrigenPedido();
-    obtenerOrigenesCriterio.obtenerOrigenesCriterio(req, resp);
-});
-origenRouter.get("/obtenerOrigenes", [auth_1.verificaToken], (req, resp) => {
-    const obtenerOrigenes = new origenPedidoClass_1.OrigenPedido();
-    obtenerOrigenes.obtenerOrigenes(req, resp);
-});
 origenRouter.delete("/eliminarOrigen", [auth_1.verificaToken], (req, resp) => {
     const eliminarOrigen = new origenPedidoClass_1.OrigenPedido();
     eliminarOrigen.eliminarOrigen(req, resp);
