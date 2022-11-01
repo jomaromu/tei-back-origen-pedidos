@@ -21,7 +21,7 @@ server.app.use(fileUpload());
 server.app.use(cors({ origin: true, credentials: true }));
 
 // conexion local
-mongoose.connect('mongodb://127.0.0.1:27017/todoImpresiones', { autoIndex: false }, (err) => {
+mongoose.connect('mongodb://127.0.0.1:27017/angie', { autoIndex: false }, (err) => {
     if (err) throw err;
     console.log('Base de datos Online');
 });

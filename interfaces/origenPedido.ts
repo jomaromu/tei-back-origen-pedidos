@@ -4,4 +4,5 @@ export interface OrigenPedidoInterface {
     idCreador: string;
     nombre: string;
     estado: boolean;
+    foranea: string
 }

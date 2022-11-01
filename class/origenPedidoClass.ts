@@ -1,6 +1,7 @@
 import { Response } from "express";
 import { CallbackError } from "mongoose";
 import Server from "./server";
+const mongoose = require("mongoose");
 
 // Interfaces
 import { OrigenPedidoInterface } from "../interfaces/origenPedido";
@@ -12,12 +13,14 @@ export class OrigenPedido {
   constructor() {}
 
   crearOrigen(req: any, resp: Response): void {
-    const idCreador = req.usuario._id;
+    const idCreador = new mongoose.Types.ObjectId(req.usuario._id);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
     const nombre = req.body.nombre;
     const estado: boolean = req.body.estado;
 
     const nuevoOrigen = new origenPedidoModel({
       idCreador,
+      foranea,
       nombre,
       estado,
     });
@@ -44,11 +47,12 @@ export class OrigenPedido {
   }
 
   async editarOrigen(req: any, resp: Response): Promise<any> {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.body.id);
+    const foranea = new mongoose.Types.ObjectId(req.body.foranea);
     const nombre = req.body.nombre;
     const estado: boolean = req.body.estado;
 
-    const respOrigen = await origenPedidoModel.findById(id).exec();
+    const respOrigen = await origenPedidoModel.findOne({ _id, foranea }).exec();
 
     if (!respOrigen) {
       return resp.json({
@@ -65,8 +69,8 @@ export class OrigenPedido {
         query.nombre = respOrigen.nombre;
       }
 
-      origenPedidoModel.findByIdAndUpdate(
-        id,
+      origenPedidoModel.findOneAndUpdate(
+        { _id, foranea },
         query,
         { new: true },
         (err: CallbackError, origenDB: any) => {
@@ -93,10 +97,11 @@ export class OrigenPedido {
   }
 
   obtenerOrigen(req: any, resp: Response): void {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.get("id"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
-    origenPedidoModel.findById(
-      id,
+    origenPedidoModel.findOne(
+      { _id, foranea },
       (err: CallbackError, origenDB: OrigenPedidoInterface) => {
         if (err) {
           return resp.json({
@@ -122,8 +127,9 @@ export class OrigenPedido {
   }
 
   obtenerOrigenes(req: any, resp: Response): void {
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
     origenPedidoModel.find(
-      {},
+      { foranea },
       (err: CallbackError, origenesDB: Array<OrigenPedidoInterface>) => {
         if (err) {
           return resp.json({
@@ -144,9 +150,10 @@ export class OrigenPedido {
   obtenerOrigenesCriterio(req: any, resp: Response): void {
     const criterio = req.get("criterio");
     const regExpCrit = new RegExp(criterio, "i");
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
     origenPedidoModel.find(
-      { nombre: regExpCrit },
+      { $and: [{ $or: [{ nombre: regExpCrit }] }, { foranea }] },
       (err: CallbackError, origenesDB: Array<OrigenPedidoInterface>) => {
         // estado: estado
 
@@ -158,13 +165,6 @@ export class OrigenPedido {
           });
         }
 
-        // if (origenesDB.length === 0) {
-        //     return resp.json({
-        //         ok: false,
-        //         mensaje: `No se encontró un Origen de Pedido`
-        //     });
-        // }
-
         return resp.json({
           ok: true,
           origenesDB,
@@ -174,10 +174,11 @@ export class OrigenPedido {
   }
 
   eliminarOrigen(req: any, resp: Response): void {
-    const id = req.get("id");
+    const _id = new mongoose.Types.ObjectId(req.get("id"));
+    const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
 
-    origenPedidoModel.findById(
-      id,
+    origenPedidoModel.findOne(
+      { _id, foranea },
       (err: CallbackError, origenDB: OrigenPedidoInterface) => {
         if (err) {
           return resp.json({
@@ -194,8 +195,8 @@ export class OrigenPedido {
           });
         }
 
-        origenPedidoModel.findByIdAndDelete(
-          id,
+        origenPedidoModel.findOneAndDelete(
+          { _id, foranea },
           {},
           (err: CallbackError, origenDB: any) => {
             if (err) {

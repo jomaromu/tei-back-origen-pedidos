@@ -14,16 +14,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.OrigenPedido = void 0;
 const server_1 = __importDefault(require("./server"));
+const mongoose = require("mongoose");
 // Modelos
 const origenPedidoModel_1 = __importDefault(require("../models/origenPedidoModel"));
 class OrigenPedido {
     constructor() { }
     crearOrigen(req, resp) {
-        const idCreador = req.usuario._id;
+        const idCreador = new mongoose.Types.ObjectId(req.usuario._id);
+        const foranea = new mongoose.Types.ObjectId(req.body.foranea);
         const nombre = req.body.nombre;
         const estado = req.body.estado;
         const nuevoOrigen = new origenPedidoModel_1.default({
             idCreador,
+            foranea,
             nombre,
             estado,
         });
@@ -50,10 +53,11 @@ class OrigenPedido {
     }
     editarOrigen(req, resp) {
         return __awaiter(this, void 0, void 0, function* () {
-            const id = req.get("id");
+            const _id = new mongoose.Types.ObjectId(req.body.id);
+            const foranea = new mongoose.Types.ObjectId(req.body.foranea);
             const nombre = req.body.nombre;
             const estado = req.body.estado;
-            const respOrigen = yield origenPedidoModel_1.default.findById(id).exec();
+            const respOrigen = yield origenPedidoModel_1.default.findOne({ _id, foranea }).exec();
             if (!respOrigen) {
                 return resp.json({
                     ok: false,
@@ -68,7 +72,7 @@ class OrigenPedido {
                 if (!query.nombre) {
                     query.nombre = respOrigen.nombre;
                 }
-                origenPedidoModel_1.default.findByIdAndUpdate(id, query, { new: true }, (err, origenDB) => {
+                origenPedidoModel_1.default.findOneAndUpdate({ _id, foranea }, query, { new: true }, (err, origenDB) => {
                     if (err) {
                         return resp.json({
                             ok: false,
@@ -92,8 +96,9 @@ class OrigenPedido {
         });
     }
     obtenerOrigen(req, resp) {
-        const id = req.get("id");
-        origenPedidoModel_1.default.findById(id, (err, origenDB) => {
+        const _id = new mongoose.Types.ObjectId(req.get("id"));
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+        origenPedidoModel_1.default.findOne({ _id, foranea }, (err, origenDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
@@ -114,7 +119,8 @@ class OrigenPedido {
         });
     }
     obtenerOrigenes(req, resp) {
-        origenPedidoModel_1.default.find({}, (err, origenesDB) => {
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+        origenPedidoModel_1.default.find({ foranea }, (err, origenesDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
@@ -131,7 +137,8 @@ class OrigenPedido {
     obtenerOrigenesCriterio(req, resp) {
         const criterio = req.get("criterio");
         const regExpCrit = new RegExp(criterio, "i");
-        origenPedidoModel_1.default.find({ nombre: regExpCrit }, (err, origenesDB) => {
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+        origenPedidoModel_1.default.find({ $and: [{ $or: [{ nombre: regExpCrit }] }, { foranea }] }, (err, origenesDB) => {
             // estado: estado
             if (err) {
                 return resp.json({
@@ -140,12 +147,6 @@ class OrigenPedido {
                     err,
                 });
             }
-            // if (origenesDB.length === 0) {
-            //     return resp.json({
-            //         ok: false,
-            //         mensaje: `No se encontró un Origen de Pedido`
-            //     });
-            // }
             return resp.json({
                 ok: true,
                 origenesDB,
@@ -153,8 +154,9 @@ class OrigenPedido {
         });
     }
     eliminarOrigen(req, resp) {
-        const id = req.get("id");
-        origenPedidoModel_1.default.findById(id, (err, origenDB) => {
+        const _id = new mongoose.Types.ObjectId(req.get("id"));
+        const foranea = new mongoose.Types.ObjectId(req.get("foranea"));
+        origenPedidoModel_1.default.findOne({ _id, foranea }, (err, origenDB) => {
             if (err) {
                 return resp.json({
                     ok: false,
@@ -168,7 +170,7 @@ class OrigenPedido {
                     mensaje: `No se encontró un Origen de Pedido`,
                 });
             }
-            origenPedidoModel_1.default.findByIdAndDelete(id, {}, (err, origenDB) => {
+            origenPedidoModel_1.default.findOneAndDelete({ _id, foranea }, {}, (err, origenDB) => {
                 if (err) {
                     return resp.json({
                         ok: false,
